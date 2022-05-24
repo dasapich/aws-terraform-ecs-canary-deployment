@@ -401,7 +401,7 @@ resource "aws_ecs_task_definition" "demo_taskdef" {
   container_definitions = jsonencode([
     {
       name      = "ecs-canary-demo"
-      image     = "docker.io/library/nginx:latest"
+      image     = format("%s:latest", aws_ecr_repository.ecs-canary-demo.repository_url)
       essential = true
       portMappings = [
         {
