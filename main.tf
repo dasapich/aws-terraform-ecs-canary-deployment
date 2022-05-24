@@ -398,33 +398,30 @@ resource "aws_ecs_task_definition" "demo_taskdef" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs-task-role.arn
   task_role_arn            = aws_iam_role.ecs-task-role.arn
-  # TODO: Update to use image from ECR
-  container_definitions = <<TASK_DEFINITION
-[
-  {
-    "name": "ecs-canary-demo",
-    "image": "amazon/amazon-ecs-sample",
-    "portMappings": [
-      {
-        "containerPort": 80,
-        "protocol": "tcp"
+  container_definitions = jsonencode([
+    {
+      name      = "ecs-canary-demo"
+      image     = "docker.io/library/nginx:latest"
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          protocol      = "tcp"
+        }
+      ]
+      dockerLabels = {
+        name = "ecs-canary-demo"
       }
-    ],
-    "essential": true,
-    "dockerLabels": {
-      "name": "ecs-canary-demo"
-    },
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "/ecs-canary/ecs-canary-demo",
-        "awslogs-region": "ap-southeast-1",
-        "awslogs-stream-prefix": "ecs-canary-demo"
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs-canary/ecs-canary-demo"
+          awslogs-region        = "ap-southeast-1"
+          awslogs-stream-prefix = "ecs-canary-demo"
+        }
       }
     }
-  }
-]
-TASK_DEFINITION
+  ])
 }
 
 
