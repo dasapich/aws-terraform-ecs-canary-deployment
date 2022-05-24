@@ -543,3 +543,61 @@ resource "aws_iam_role" "ecs-canary-lambda-role" {
     aws_iam_policy.lambda-deployment-hook-policy.arn,
   ]
 }
+
+resource "aws_lambda_function" "ecs_canary_before_install_lambda_function" {
+  function_name = "blue-green-ecs-before-install"
+  description   = "Deployment lifecycle hook to clean up listener rules before install replacement taskset"
+  role          = aws_iam_role.ecs-canary-lambda-role.arn
+  filename      = "before_install.zip"
+  handler       = "before_install.handler"
+  runtime       = "python3.9"
+  memory_size   = 128
+  timeout       = 60
+
+  environment {
+    variables = {
+      APP_ALB           = aws_lb.ecs_canary_alb.arn
+      ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
+    }
+  }
+}
+
+resource "aws_lambda_function" "ecs_canary_after_allow_test_traffic_lambda_function" {
+  function_name = "blue-green-ecs-after-allow-test-traffic"
+  description   = "Deployment lifecycle hook for testing"
+  role          = aws_iam_role.ecs-canary-lambda-role.arn
+  filename      = "after_allow_test_traffic.zip"
+  handler       = "after_allow_test_traffic.handler"
+  runtime       = "python3.9"
+  memory_size   = 128
+  timeout       = 60
+
+  environment {
+    variables = {
+      APP_ALB           = aws_lb.ecs_canary_alb.arn
+      ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
+      ALB_TG_X          = aws_lb_target_group.ecs_canary_target_group_a.arn
+      ALB_TG_Y          = aws_lb_target_group.ecs_canary_target_group_b.arn
+      HTTP_HEADER_NAME  = "storetype"
+      HTTP_HEADER_VALUE = "pilot"
+    }
+  }
+}
+
+resource "aws_lambda_function" "ecs_canary_before_allow_traffic_lambda_function" {
+  function_name = "blue-green-ecs-before-allow-traffic"
+  description   = "Deployment lifecycle hook to clean up tests"
+  role          = aws_iam_role.ecs-canary-lambda-role.arn
+  filename      = "before_allow_traffic.zip"
+  handler       = "before_allow_traffic.handler"
+  runtime       = "python3.9"
+  memory_size   = 128
+  timeout       = 60
+
+  environment {
+    variables = {
+      APP_ALB           = aws_lb.ecs_canary_alb.arn
+      ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
+    }
+  }
+}
