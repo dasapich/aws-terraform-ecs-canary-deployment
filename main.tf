@@ -353,7 +353,7 @@ resource "aws_ecr_repository" "ecs-canary-demo" {
 
 # ECS Cluster
 resource "aws_ecs_cluster" "ecs_canary_cluster" {
-  name               = "ecs_canary_cluster"
+  name               = "ecs-canary-cluster"
   capacity_providers = ["FARGATE"]
   setting {
     name  = "containerInsights"
@@ -381,11 +381,9 @@ resource "aws_ecs_service" "ecs_canary_service" {
     subnets = [aws_subnet.demo_vpc_private_a.id, aws_subnet.demo_vpc_private_b.id]
   }
 
-  /*
   deployment_controller {
     type = "CODE_DEPLOY"
   }
-  */
 
   depends_on = [aws_lb_listener.ecs_canary_alb_main_listener]
 }
@@ -432,7 +430,6 @@ resource "aws_cloudwatch_log_group" "ecs_canary_demo_log_group" {
 }
 
 
-/*
 # AWS CodeDeploy Blue/Green deployments
 resource "aws_codedeploy_app" "ecs_canary_codedeploy_app" {
   name             = "ecs-canary-deployment-demo"
@@ -494,6 +491,5 @@ resource "aws_codedeploy_deployment_group" "ecs_canary_deployment_group" {
     }
   }
 }
-*/
 
 # TODO: Add lifecycle hook lambda functions
