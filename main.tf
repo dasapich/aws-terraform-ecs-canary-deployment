@@ -492,4 +492,54 @@ resource "aws_codedeploy_deployment_group" "ecs_canary_deployment_group" {
   }
 }
 
-# TODO: Add lifecycle hook lambda functions
+
+# AWS CodeDeploy deployment lifecycle hooks lambda functions
+data "aws_iam_policy_document" "lambda-assume-role-policy" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy" "lambda-basic-execution-role-policy" {
+  name = "AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_policy" "lambda-execution-policy" {
+  name   = "lambda-execution-policy"
+  policy = data.aws_iam_policy.lambda-basic-execution-role-policy.policy
+}
+
+resource "aws_iam_policy" "lambda-deployment-hook-policy" {
+  name = "lambda-deployment-hook-policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "codedeploy:PutLifecycleEventHookExecutionStatus",
+          "elasticloadbalancing:Describe*",
+          "elasticloadbalancing:ModifyListener",
+          "elasticloadbalancing:CreateRule",
+          "elasticloadbalancing:ModifyRule",
+          "elasticloadbalancing:DeleteRule",
+          "elasticloadbalancing:SetRulePriorities",
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role" "ecs-canary-lambda-role" {
+  name               = "ecs-canary-lambda-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda-assume-role-policy.json
+  managed_policy_arns = [
+    aws_iam_policy.lambda-execution-policy.arn,
+    aws_iam_policy.lambda-deployment-hook-policy.arn,
+  ]
+}
