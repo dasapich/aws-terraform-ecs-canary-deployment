@@ -558,6 +558,7 @@ resource "aws_lambda_function" "ecs_canary_before_install_lambda_function" {
     variables = {
       APP_ALB           = aws_lb.ecs_canary_alb.arn
       ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
+      HTTP_HEADER_NAME  = "storetype"
     }
   }
 }
@@ -574,12 +575,12 @@ resource "aws_lambda_function" "ecs_canary_after_allow_test_traffic_lambda_funct
 
   environment {
     variables = {
-      APP_ALB           = aws_lb.ecs_canary_alb.arn
-      ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
-      ALB_TG_X          = aws_lb_target_group.ecs_canary_target_group_a.arn
-      ALB_TG_Y          = aws_lb_target_group.ecs_canary_target_group_b.arn
-      HTTP_HEADER_NAME  = "storetype"
-      HTTP_HEADER_VALUE = "pilot"
+      APP_ALB                = aws_lb.ecs_canary_alb.arn
+      ALB_PROD_LISTENER      = aws_lb_listener.ecs_canary_alb_main_listener.arn
+      ALB_TG_X               = aws_lb_target_group.ecs_canary_target_group_a.arn
+      ALB_TG_Y               = aws_lb_target_group.ecs_canary_target_group_b.arn
+      HTTP_HEADER_NAME       = "storetype"
+      HTTP_HEADER_VALUE_LIST = "pilot"
     }
   }
 }
@@ -598,6 +599,7 @@ resource "aws_lambda_function" "ecs_canary_before_allow_traffic_lambda_function"
     variables = {
       APP_ALB           = aws_lb.ecs_canary_alb.arn
       ALB_PROD_LISTENER = aws_lb_listener.ecs_canary_alb_main_listener.arn
+      HTTP_HEADER_NAME  = "storetype"
     }
   }
 }
